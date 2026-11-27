@@ -3,7 +3,7 @@
 // to the AI judge, at $MAKEFUN_OUTPUT_DIR/entry.txt.
 // Node 22, standard library only, no network access.
 
-import { mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ENTRY_TEXT: string =
@@ -27,7 +27,13 @@ function main(): void {
   writeFileSync(tempPath, ENTRY_TEXT, "utf8");
   renameSync(tempPath, targetPath);
 
-  console.log(`Wrote ${targetPath}`);
+  // Verify the write landed intact: read the file back and compare.
+  const written: string = readFileSync(targetPath, "utf8");
+  if (written !== ENTRY_TEXT) {
+    throw new Error(`verification failed: ${targetPath} does not match the entry text`);
+  }
+
+  console.log(`Wrote ${targetPath} (${Buffer.byteLength(ENTRY_TEXT, "utf8")} bytes)`);
 }
 
 main();
